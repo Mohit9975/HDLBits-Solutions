@@ -1,0 +1,142 @@
+module top_module(
+    input clk,
+    input reset,
+    input ena,
+    output pm,
+    output [7:0] hh,
+    output [7:0] mm,
+    output [7:0] ss); 
+
+    wire [3:0] su, st, mu, mt, hu, ht;
+    wire [5:1] en;
+    wire rst_when_12_top;
+    
+    BCD_counter_second_and_minute_unit_place Second_Unit (.clock(clk), .reset(reset), .enable(ena), .Q(su));
+    BCD_counter_second_and_minute_tens_place Second_Tens (.clock(clk), .reset(reset), .enable(en[1]), .Q(st));
+    BCD_counter_second_and_minute_unit_place Minute_Unit (.clock(clk), .reset(reset), .enable(en[2]), .Q(mu));
+    BCD_counter_second_and_minute_tens_place Minute_Tens (.clock(clk), .reset(reset), .enable(en[3]), .Q(mt));
+    BCD_counter_hour_unit_place Hour_Unit (.clock(clk), .reset(reset), .enable(en[4]), .Q(hu), .rst_when_12(rst_when_12_top));
+    BCD_counter_hour_tens_place Hour_Tens (.clock(clk), .reset(reset), .enable(en[5]), .Q(ht));
+    
+    assign en[1]= (su==4'd9 && ena);
+    assign en[2]= (su==4'd9 && st==4'd5);
+    assign en[3]= (mu==4'd9 && su==4'd9 && st==4'd5);
+    assign en[4]= (mu==4'd9 && mt==4'd5 && su==4'd9 && st==4'd5);
+    assign en[5]= ((hu==4'd9 | (hu==4'd2 && rst_when_12_top==1'b1)) && mu==4'd9 && mt==4'd5 && su==4'd9 && st==4'd5);
+    
+    assign rst_when_12_top = (hu==4'd2 && ht==4'd1);
+    
+    always @(posedge clk)
+        begin
+            if(reset)
+                pm<=1'b0;
+            else
+                begin
+                    if(ht==4'd1 && hu==4'd1 && mu==4'd9 && mt==4'd5 && su==4'd9 && st==4'd5)
+                        pm<=~pm;
+                end
+        end
+    
+    assign hh= {ht, hu};
+    assign mm= {mt, mu};
+    assign ss= {st, su};
+    
+endmodule
+
+module BCD_counter_second_and_minute_unit_place(
+    input clock,
+    input reset,
+    input enable,
+    output [3:0] Q);
+    
+    always @(posedge clock)
+        begin
+            if (reset)
+                Q<= 4'd0;
+            else
+                begin
+                    if(enable&&(Q==9))
+                        Q<=4'd0;
+                    else
+                        begin
+                       		 if(enable)
+                           		 Q<=Q+4'd1;
+                        end
+                end
+        end
+endmodule
+
+module BCD_counter_second_and_minute_tens_place(
+    input clock,
+    input reset,
+    input enable,
+    output [3:0] Q);
+    
+    always @(posedge clock)
+        begin
+            if (reset)
+                Q<= 4'd0;
+            else
+                begin
+                    if(enable&&(Q==5))
+                        Q<=4'd0;
+                    else
+                        begin
+                       		 if(enable)
+                           		 Q<=Q+4'd1;
+                        end
+                end
+        end
+endmodule
+
+module BCD_counter_hour_tens_place(
+    input clock,
+    input reset,
+    input enable,
+    output [3:0] Q);
+    
+    always @(posedge clock)
+        begin
+            if (reset)
+                Q<= 4'd1;
+            else
+                begin
+                    if(enable&&(Q==1))
+                        Q<=4'd0;
+                    else
+                        begin
+                       		 if(enable)
+                           		 Q<=Q+4'd1;
+                        end
+                end
+        end
+endmodule
+
+module BCD_counter_hour_unit_place(
+    input clock,
+    input reset,
+    input enable,
+    input rst_when_12,
+    output [3:0] Q);
+    
+    always @(posedge clock)
+        begin
+            if (reset)
+                Q<= 4'd2;
+            else
+                begin
+                    if(enable && (Q==2 && rst_when_12))
+                        Q<=4'd1;
+                    else
+                        begin
+                            if(enable && (Q==9))
+                           		 Q<=4'd0;
+                               else
+                                   begin
+                                  		 if(enable)
+                                       		Q<=Q+4'd1;
+                                   end
+                        end
+                end
+        end
+endmodule
