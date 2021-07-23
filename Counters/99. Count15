@@ -1,0 +1,32 @@
+module top_module (
+    input clk,
+    input reset,      // Synchronous active-high reset
+    output [3:0] q);
+    
+    wire [3:0] w;
+    
+    ff_jk inst1 (.clk(clk), .j(1), .k(1), .q(w[0]), .reset(reset));
+    ff_jk inst2 (.clk(clk), .j(w[0]), .k(w[0]), .q(w[1]), .reset(reset));
+    ff_jk inst3 (.clk(clk), .j(w[1]&w[0]), .k(w[1]&w[0]), .q(w[2]), .reset(reset));
+    ff_jk inst4 (.clk(clk), .j(w[2]&w[1]&w[0]), .k(w[2]&w[1]&w[0]), .q(w[3]), .reset(reset));
+    
+    assign q= w;
+ 
+endmodule
+
+module ff_jk (input j, k, clk, reset,
+              output reg q);
+    always @(posedge clk)
+        begin
+            if (reset)
+                q<= 1'b0;
+            else
+                case({j,k})
+                    2'b00: q= q;
+                    2'b01: q= 1'b1;
+                    2'b10: q= 1'b0;
+                    2'b11: q= ~q;
+                    
+                endcase
+        end
+endmodule
