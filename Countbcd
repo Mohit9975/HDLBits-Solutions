@@ -1,0 +1,41 @@
+module top_module (
+    input clk,
+    input reset,   // Synchronous active-high reset
+    output [3:1] ena,
+    output [15:0] q);
+    
+    wire [3:0] w1, w2, w3, w0;
+
+    bcd_counter inst1 (.clk(clk), .reset(reset), .enable(1'b1), .q(w0));
+    bcd_counter inst2 (.clk(clk), .reset(reset), .enable(ena[1]), .q(w1));
+    bcd_counter inst3 (.clk(clk), .reset(reset), .enable(ena[2]), .q(w2));
+    bcd_counter inst4 (.clk(clk), .reset(reset), .enable(ena[3]), .q(w3));
+    
+    assign ena= {(w2 == 4'd9) && (w1 == 4'd9) && (w0 == 4'd9), (w1 == 4'd9) && (w0 == 4'd9), w0 == 4'd9};
+    assign q={w3,w2,w1,w0};
+    
+endmodule
+
+module bcd_counter (
+    input clk,
+    input reset,
+    input enable,
+    output [3:0] q);
+
+    always @(posedge clk)
+        begin
+            if(reset)
+                q<= 4'b0000;
+            else
+                begin
+                    if(enable && q==4'd9)
+                        q<=4'd0;
+                    else
+                        begin
+                            if(enable)
+               	            q<= q+ 4'b0001;
+                        end
+                end
+        end
+                
+endmodule
