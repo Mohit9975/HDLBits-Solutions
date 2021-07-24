@@ -38,16 +38,14 @@ module top_module(
                 q<= data;
             else
                 begin
-                    if(~load)
-                        begin
                     case(ena)
-                        2'b01: q[99:0]= {q[0], q[99:1]};
-                        2'b10: q[99:0]= {q[98:0], q[99]};
+                        2'b01: q[99:0]<= {q[0], q[99:1]};
+                        2'b10: q[99:0]<= {q[98:0], q[99]};
                         2'b11: q<=q;
                         2'b00: q<=q;
                     endcase
-                        end
                 end
         end
-endmodule 
+endmodule
+
 */
