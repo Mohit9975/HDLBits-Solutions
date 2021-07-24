@@ -1,0 +1,30 @@
+module top_module (
+    input [3:0] SW,
+    input [3:0] KEY,
+    output [3:0] LEDR
+); 
+    wire [3:0] q;
+    
+    MUXDFF inst1 (.clk(KEY[0]), .E(KEY[1]), .L(KEY[2]), .R(SW[3]), .Q(q[3]), .w(KEY[3]));
+    MUXDFF inst2 (.clk(KEY[0]), .E(KEY[1]), .L(KEY[2]), .R(SW[2]), .Q(q[2]), .w(q[3]));
+    MUXDFF inst3 (.clk(KEY[0]), .E(KEY[1]), .L(KEY[2]), .R(SW[1]), .Q(q[1]), .w(q[2]));
+    MUXDFF inst4 (.clk(KEY[0]), .E(KEY[1]), .L(KEY[2]), .R(SW[0]), .Q(q[0]), .w(q[1]));
+    
+    assign LEDR= q;
+
+endmodule
+
+module MUXDFF (
+    input clk,
+    input w, R, E, L,
+    output Q
+);
+
+    wire w1, w2;
+    assign w1= E ? w: Q;
+    assign w2= L ? R: w1;
+    
+    always @(posedge clk)
+        begin Q<= w2;
+        end
+endmodule
