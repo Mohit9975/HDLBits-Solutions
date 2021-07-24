@@ -1,0 +1,49 @@
+module top_module(
+    input clk,
+    input reset,    // Active-high synchronous reset to 5'h1
+    output [4:0] q
+); 
+
+    wire [4:0] w;
+    wire [1:0] x;
+    
+    d_ff0 inst1 (.clk(clk), .reset(reset), .q(w[4]), .d(x[1]));
+    d_ff0 inst2 (.clk(clk), .reset(reset), .q(w[3]), .d(w[4]));
+    d_ff0 inst3 (.clk(clk), .reset(reset), .q(w[2]), .d(x[0]));
+    d_ff0 inst4 (.clk(clk), .reset(reset), .q(w[1]), .d(w[2]));
+    d_ff1 inst5 (.clk(clk), .reset(reset), .q(w[0]), .d(w[1]));
+    
+    assign x= {w[0], w[3]^w[0]};
+    assign q= w;
+    
+endmodule
+
+module d_ff0(
+    input d,
+    input clk,
+    input reset,
+    output q);
+    
+    always @(posedge clk)
+        begin
+            if(reset)
+                q<=1'b0;
+            else
+                q<=d;
+        end
+endmodule
+
+module d_ff1(
+    input d,
+    input clk,
+    input reset,
+    output q);
+    
+    always @(posedge clk)
+        begin
+            if(reset)
+                q<=1'b1;
+            else
+                q<=d;
+        end
+endmodule
