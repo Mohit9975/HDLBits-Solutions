@@ -1,0 +1,27 @@
+module top_module(
+    input clk,
+    input load,
+    input [511:0] data,
+    output [511:0] q ); 
+
+    reg [513:0] r;
+    assign r[0]= 1'b0;
+    assign r[513]= 1'b0;
+    
+    always @(posedge clk)
+        begin
+            if(load)
+                begin
+                    r[512:1]<= data;
+                end
+            else
+                begin
+               		 for(int i=1; i<513; i=i+1)
+                         r[i]<= (~r[i+1]&r[i]) | r[i]^r[i-1];
+                end
+        end
+    
+    assign q[511:0]= r[512:1];
+    
+endmodule
+
